@@ -3,6 +3,8 @@ package fr.univ_amu.iut.exercice1;
 import java.net.URL;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
@@ -40,5 +42,13 @@ public class PremiereVueFXML extends Application {
     // 3. Créer une Scene avec ce Parent et la donner à primaryStage.
     //
     // 4. Ajouter un titre et show().
+
+    URL fxml = getClass().getResource("PremiereVueFXML.fxml");
+    Parent root = FXMLLoader.load(fxml);
+
+    Scene scene = new Scene(root, 300, 200);
+    primaryStage.setScene(scene);
+    primaryStage.setTitle("Première vue FXML");
+    primaryStage.show();
   }
 }
