@@ -65,3 +65,4 @@
 
      <Button fx:id="boutonReinitialiser" text="Réinitialiser" onAction="#reinitialiser"/>
 </VBox>
+
