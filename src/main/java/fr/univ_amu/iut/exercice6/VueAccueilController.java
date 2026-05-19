@@ -38,6 +38,12 @@ public class VueAccueilController {
     //        enTeteController.mettreAJourCompteur(total);
     //      });
     // 2. Initialiser le compteur de l'en-tête au nombre courant de cartes (zéro au démarrage).
+    enTeteController.setActionNouveauSite(
+        () -> {
+          int total = listeSitesController.ajouterSiteDemo();
+          enTeteController.mettreAJourCompteur(total);
+        });
+    enTeteController.mettreAJourCompteur(listeSitesController.getNombreCartes());
   }
 
   /** Exposé pour les tests : permet de récupérer le sous-contrôleur en-tête. */

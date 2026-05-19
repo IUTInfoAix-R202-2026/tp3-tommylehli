@@ -41,7 +41,16 @@ public class ListeSitesController {
     //    haut, comme dans un flux d'activité.
     // 4. Retourner conteneurCartes.getChildren().size().
     int total = 0;
-    return total;
+    compteurDemo += 1;
+    SiteCarte sitecarte = new SiteCarte();
+    sitecarte.setNumeroCarre("Carré " + (640000 + compteurDemo));
+    sitecarte.setNomConvivial("📍 Site de démonstration #" + compteurDemo);
+    sitecarte.setNombrePoints((compteurDemo % 3) + 1);
+    sitecarte.setNombrePassages(compteurDemo * 2);
+    sitecarte.setJoursDepuisDernierPassage(compteurDemo * 4);
+
+    conteneurCartes.getChildren().add(0, sitecarte);
+    return conteneurCartes.getChildren().size();
   }
 
   /** Retourne le nombre courant de cartes affichées (utile pour les tests). */
