@@ -1,6 +1,9 @@
 package fr.univ_amu.iut.exercice7;
 
 import java.time.LocalTime;
+import javafx.animation.PauseTransition;
+import javafx.beans.binding.Bindings;
+import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceBox;
@@ -8,6 +11,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
+import javafx.util.Duration;
 
 /**
  * Contrôleur de la pierre angulaire MVC (parcours P3 - vérification d'une nuit de capture par
@@ -55,6 +59,11 @@ public class QualificationController {
     // - colDuree       -> c.getValue().dureeSecondesProperty()
     // - colStatut      -> c.getValue().statutProperty()
     // Puis : tableView.setItems(nuit.getSequences()).
+    colHorodatage.setCellValueFactory(c -> c.getValue().horodatageProperty());
+    colFrequence.setCellValueFactory(c -> c.getValue().frequenceDominanteKHzProperty());
+    colDuree.setCellValueFactory(c -> c.getValue().dureeSecondesProperty());
+    colStatut.setCellValueFactory(c -> c.getValue().statutProperty());
+    tableView.setItems(nuit.getSequences());
 
     // TODO exercice 7 (étape 2) : afficher dans labelSelection la séquence sélectionnée.
     // - sans sélection : "(sélectionnez une séquence dans le tableau)"
@@ -62,23 +71,44 @@ public class QualificationController {
     //   - 45.2 kHz"). Utiliser String.format("%.1f kHz", ...).
     // Astuce : addListener((obs, ancien, nouveau) -> ...) sur
     // tableView.getSelectionModel().selectedItemProperty().
+    tableView
+        .getSelectionModel()
+        .selectedItemProperty()
+        .addListener(
+            (obs, ancien, nouveau) -> {
+              LocalTime horodatage = nouveau.getHorodatage();
+              double frequence = nouveau.getFrequenceDominanteKHz();
+              String message = String.format("Séquence %s - %.1f kHz", horodatage, frequence);
+              labelSelection.setText(message);
+            });
     labelSelection.setText("(sélectionnez une séquence dans le tableau)");
     labelLecture.setText("");
 
     // TODO exercice 7 (étape 3) : le bouton "Écouter" est désactivé tant qu'aucune séquence
     // n'est sélectionnée. Utiliser un binding entre boutonEcouter.disableProperty() et
     // tableView.getSelectionModel().selectedItemProperty().isNull().
+    boutonEcouter
+        .disableProperty()
+        .bind(tableView.getSelectionModel().selectedItemProperty().isNull());
 
     // TODO exercice 7 (étape 4) : peupler la ChoiceBox avec les trois verdicts possibles :
     // "OK", "Douteux", "À jeter".
+    choiceBoxVerdict.setItems(FXCollections.observableArrayList("OK", "Douteux", "À jeter"));
 
     // TODO exercice 7 (étape 5) : labelVerdictGlobal doit refléter le verdict du modèle.
     // - tant que le verdict est vide : "Verdict global : (à saisir)"
     // - sinon : "Verdict global : <verdict>"
     // Utiliser Bindings.when(...).then(...).otherwise(...).
+    labelVerdictGlobal
+        .textProperty()
+        .bind(
+            Bindings.when(nuit.verdictGlobalProperty().isEmpty())
+                .then("Verdict global : (à saisir)")
+                .otherwise(Bindings.concat("Verdict global : ", nuit.verdictGlobalProperty())));
 
     // TODO exercice 7 (étape 6) : lier la TextArea de commentaire au modèle (binding
     // bidirectionnel).
+    zoneCommentaire.textProperty().bindBidirectional(nuit.commentaireProperty());
   }
 
   /** Action du bouton « Écouter ». Lecture audio simulée : statut → "Écoutée" + label éphémère. */
@@ -87,6 +117,14 @@ public class QualificationController {
     // TODO exercice 7 (étape 7) : mettre le statut de la séquence sélectionnée à "Écoutée" et
     // afficher "Lecture en cours..." dans labelLecture. Ce texte doit s'effacer après 600 ms
     // (PauseTransition + setOnFinished(...)).
+    Sequence selectionCourant = tableView.getSelectionModel().getSelectedItem();
+    if (selectionCourant != null) {
+      selectionCourant.setStatut("Écoutée");
+      labelLecture.setText("Lecture en cours...");
+      PauseTransition pause = new PauseTransition(Duration.millis(600));
+      pause.setOnFinished(e -> labelLecture.setText(""));
+      pause.play();
+    }
   }
 
   /** Action du bouton « Enregistrer le verdict ». Écrit le verdict choisi dans le modèle. */
@@ -94,6 +132,10 @@ public class QualificationController {
   private void enregistrerVerdict() {
     // TODO exercice 7 (étape 8) : lire choiceBoxVerdict.getValue() et l'enregistrer dans le
     // modèle via nuit.setVerdictGlobal(...). Ne rien faire si aucun verdict n'est sélectionné.
+    String stock = choiceBoxVerdict.getValue();
+    if (stock != null) {
+      nuit.setVerdictGlobal(stock);
+    }
   }
 
   /** Exposé pour les tests : permet de vérifier l'état du modèle après actions sur la vue. */
